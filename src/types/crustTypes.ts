@@ -254,15 +254,29 @@ export const crustTypes: CrustType[] = [
         emoji: '❄️',
         description: 'Classic frozen deep-dish shell. Thaw 15 min, prick, blind-bake at 425°F for 10–12 min before filling.',
         pairsWell: ['custard', 'cream', 'sugar', 'mousse', 'fruit'],
-        ingredients: [],
+        // ~170g shell: 130g flour, 28g shortening, 12g butter per label
+        ingredients: [
+          { name: 'All-Purpose Flour', amount: 130 },
+          { name: 'Shortening', amount: 28 },
+          { name: 'Unsalted Butter', amount: 12 },
+          { name: 'Salt', amount: 4 },
+          { name: 'Ice Water', amount: 30 },
+        ],
       },
       {
         group: 'Frozen Shells',
-        name: 'Marie Callender\'s Frozen Deep Dish Shell',
+        name: "Marie Callender's Frozen Deep Dish Shell",
         emoji: '❄️',
         description: 'Extra-deep frozen shell — ideal for generous custard or fruit fillings. Bake from frozen at 375°F.',
         pairsWell: ['custard', 'fruit', 'sugar'],
-        ingredients: [],
+        // ~220g deep dish shell — more flour and fat than standard
+        ingredients: [
+          { name: 'All-Purpose Flour', amount: 165 },
+          { name: 'Shortening', amount: 38 },
+          { name: 'Unsalted Butter', amount: 15 },
+          { name: 'Salt', amount: 5 },
+          { name: 'Ice Water', amount: 40 },
+        ],
       },
       {
         group: 'Frozen Shells',
@@ -270,7 +284,13 @@ export const crustTypes: CrustType[] = [
         emoji: '❄️',
         description: 'Budget-friendly standard-depth frozen shell. Available in 2-packs. Thaw before filling.',
         pairsWell: ['custard', 'cream', 'sugar'],
-        ingredients: [],
+        // ~160g standard shell
+        ingredients: [
+          { name: 'All-Purpose Flour', amount: 120 },
+          { name: 'Shortening', amount: 32 },
+          { name: 'Salt', amount: 4 },
+          { name: 'Ice Water', amount: 28 },
+        ],
       },
       {
         group: 'Refrigerated Roll-Out',
@@ -278,15 +298,30 @@ export const crustTypes: CrustType[] = [
         emoji: '🥶',
         description: 'Rolled dough in a box — unroll, press into your pan, and bake. Makes single or double crust. No thawing needed.',
         pairsWell: ['fruit', 'custard', 'sugar', 'savory'],
-        ingredients: [],
+        // ~200g per single roll (box has 2)
+        ingredients: [
+          { name: 'All-Purpose Flour', amount: 148 },
+          { name: 'Shortening', amount: 32 },
+          { name: 'Unsalted Butter', amount: 10 },
+          { name: 'Salt', amount: 4 },
+          { name: 'Granulated Sugar', amount: 5 },
+          { name: 'Ice Water', amount: 35 },
+        ],
       },
       {
         group: 'Refrigerated Roll-Out',
-        name: 'Trader Joe\'s Pie Crust Rounds',
+        name: "Trader Joe's Pie Crust Rounds",
         emoji: '🥶',
         description: 'All-butter refrigerated rounds — better flavor than most store options. Roll out slightly before use.',
         pairsWell: ['fruit', 'custard', 'sugar', 'savory'],
-        ingredients: [],
+        // ~210g all-butter round
+        ingredients: [
+          { name: 'All-Purpose Flour', amount: 150 },
+          { name: 'Unsalted Butter', amount: 55 },
+          { name: 'Salt', amount: 4 },
+          { name: 'Granulated Sugar', amount: 5 },
+          { name: 'Ice Water', amount: 38 },
+        ],
       },
       {
         group: 'Graham Cracker Premade',
@@ -294,7 +329,12 @@ export const crustTypes: CrustType[] = [
         emoji: '🟫',
         description: 'Pre-pressed 9-inch graham crust in a foil pan. No baking needed — fill and chill or bake as directed.',
         pairsWell: ['cream', 'mousse', 'custard'],
-        ingredients: [],
+        // 170g: ~120g graham crumbs, 40g butter, 10g sugar per label
+        ingredients: [
+          { name: 'Graham Cracker Crumbs', amount: 120 },
+          { name: 'Unsalted Butter', amount: 40 },
+          { name: 'Granulated Sugar', amount: 10 },
+        ],
       },
       {
         group: 'Graham Cracker Premade',
@@ -302,7 +342,12 @@ export const crustTypes: CrustType[] = [
         emoji: '🟫',
         description: 'Larger deep-dish graham crust — holds more filling for mousse, cream cheese, or key lime pies.',
         pairsWell: ['cream', 'mousse', 'custard'],
-        ingredients: [],
+        // 255g deep dish
+        ingredients: [
+          { name: 'Graham Cracker Crumbs', amount: 180 },
+          { name: 'Unsalted Butter', amount: 58 },
+          { name: 'Granulated Sugar', amount: 17 },
+        ],
       },
       {
         group: 'Graham Cracker Premade',
@@ -310,7 +355,13 @@ export const crustTypes: CrustType[] = [
         emoji: '⚫',
         description: 'Pre-pressed Oreo crumb crust — pairs perfectly with chocolate mousse, peanut butter cream, or French silk.',
         pairsWell: ['mousse', 'cream'],
-        ingredients: [],
+        // 170g: ~115g chocolate crumbs, 40g butter, 15g sugar
+        ingredients: [
+          { name: 'Graham Cracker Crumbs', amount: 115 },
+          { name: 'Dutch Cocoa Powder', amount: 15 },
+          { name: 'Unsalted Butter', amount: 40 },
+          { name: 'Granulated Sugar', amount: 15 },
+        ],
       },
       {
         group: 'Specialty',
@@ -318,7 +369,14 @@ export const crustTypes: CrustType[] = [
         emoji: '🌿',
         description: 'Organic, non-GMO frozen pie shell. Slightly smaller than standard — check depth for your recipe.',
         pairsWell: ['custard', 'fruit', 'sugar', 'cream'],
-        ingredients: [],
+        // ~160g organic shell — unbleached flour, palm oil shortening
+        ingredients: [
+          { name: 'All-Purpose Flour', amount: 118 },
+          { name: 'Shortening', amount: 32 },
+          { name: 'Salt', amount: 3 },
+          { name: 'Granulated Sugar', amount: 4 },
+          { name: 'Ice Water', amount: 28 },
+        ],
       },
       {
         group: 'Specialty',
@@ -326,7 +384,15 @@ export const crustTypes: CrustType[] = [
         emoji: '🌾',
         description: 'Frozen gluten-free pie shell made with rice flour blend. Blind-bake as directed on package.',
         pairsWell: ['custard', 'fruit', 'sugar', 'cream', 'mousse'],
-        ingredients: [],
+        // ~165g GF shell: rice flour base
+        ingredients: [
+          { name: 'Rice Flour', amount: 100 },
+          { name: 'Tapioca Starch', amount: 25 },
+          { name: 'Shortening', amount: 30 },
+          { name: 'Salt', amount: 3 },
+          { name: 'Granulated Sugar', amount: 5 },
+          { name: 'Ice Water', amount: 28 },
+        ],
       },
     ],
   },
