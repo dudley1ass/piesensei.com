@@ -466,6 +466,9 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
       if (w >= 8) tasteWarnings.push('🌿 Heavy allspice — this pie will taste like it was spiced by someone who really means it.');
       else if (w >= 5) tasteWarnings.push('🌿 Noticeable allspice — warm and complex, just make sure it\'s not doing all the talking.');
     }
+
+    // Almond extract — very potent, over 8g is a lot
+    if (name.includes('almond extract')) {
       if (w >= 12) tasteWarnings.push('🌸 That\'s a lot of almond extract — warning: may taste like marzipan furniture polish.');
       else if (w >= 8) tasteWarnings.push('🌸 Strong almond extract presence — reminiscent of amaretto, maraschino cherries, and sunscreen.');
     }
