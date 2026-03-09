@@ -390,8 +390,82 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
       else if (eggCount >= 6) tasteWarnings.push(`🥚 ${eggCount} eggs is a commitment — rich, custardy, and eggy in a good way.`);
     }
 
-    // Almond extract — very potent, over 8g is a lot
-    if (name.includes('almond extract')) {
+    // Cinnamon — common in pies, easy to over-do
+    if (name.includes('cinnamon')) {
+      if (w >= 20) tasteWarnings.push('🍂 That\'s enough cinnamon to season an entire orchard. Your filling will taste like a candle.');
+      else if (w >= 12) tasteWarnings.push('🍂 Very heavy cinnamon — this pie will announce itself from the next room.');
+      else if (w >= 7) tasteWarnings.push('🍂 Bold cinnamon presence — cozy and warming, just make sure it doesn\'t eclipse the fruit.');
+    }
+
+    // Nutmeg — extremely potent, over 3g is a lot
+    if (name.includes('nutmeg')) {
+      if (w >= 8) tasteWarnings.push('🌰 That much nutmeg is medically significant. Nutmeg is toxic in large quantities — seriously, dial it back.');
+      else if (w >= 5) tasteWarnings.push('🌰 Heavy nutmeg — this pie will taste like the holidays crashed into each other at full speed.');
+      else if (w >= 3) tasteWarnings.push('🌰 Noticeable nutmeg — warm and earthy, right on the edge of overwhelming.');
+    }
+
+    // Corn syrup — over 300g is extremely sweet
+    if (name.includes('corn syrup')) {
+      if (w >= 400) tasteWarnings.push('🍯 This much corn syrup will set harder than a parking lot. Pecan pie, or a paving material?');
+      else if (w >= 280) tasteWarnings.push('🍯 Very heavy on the corn syrup — this filling will be intensely sweet and candy-firm when cool.');
+    }
+
+    // Condensed milk — over 600g
+    if (name.includes('condensed milk')) {
+      if (w >= 600) tasteWarnings.push('🥛 That\'s nearly three cans of condensed milk. This pie is sweet enough to vibrate.');
+      else if (w >= 400) tasteWarnings.push('🥛 Heavy condensed milk — rich, sweet, and caramel-like. Make sure your acid can keep up.');
+    }
+
+    // Molasses
+    if (name.includes('molasses')) {
+      if (w >= 300) tasteWarnings.push('🫙 This is going to taste like someone melted a gingerbread house into your pie dish.');
+      else if (w >= 200) tasteWarnings.push('🫙 Bold molasses — deeply rich and dark. This pie has a personality.');
+    }
+
+    // Lime juice (key lime territory)
+    if (name.includes('lime juice')) {
+      if (w >= 180) tasteWarnings.push('🟢 This much lime juice is a sensory experience. Your guests will pucker in unison.');
+      else if (w >= 120) tasteWarnings.push('🟢 Very tart lime filling — make sure your crust and topping can handle the acidity.');
+    }
+
+    // Pumpkin puree
+    if (name.includes('pumpkin')) {
+      if (w >= 800) tasteWarnings.push('🎃 You\'ve got enough pumpkin here to carve it first. Giant pie energy.');
+      else if (w >= 600) tasteWarnings.push('🎃 Very generous pumpkin — this will be dense, earthy, and aggressively autumnal.');
+    }
+
+    // Pecans
+    if (name.includes('pecan')) {
+      if (w >= 400) tasteWarnings.push('🌰 More pecans than filling at this point. Is this a pie or a nut bowl with ambitions?');
+      else if (w >= 300) tasteWarnings.push('🌰 Very nutty — every bite will be 90% pecan and 10% "wow that\'s a lot of pecan."');
+    }
+
+    // Cream cheese in a pie
+    if (name.includes('cream cheese') && w >= 450) {
+      tasteWarnings.push('🧀 This much cream cheese in a pie is a commitment — you\'re basically making cheesecake. Glorious.');
+    }
+
+    // Heavy cream — over 500g
+    if (name.includes('heavy cream') && w >= 500) {
+      tasteWarnings.push('🥛 That\'s a lot of heavy cream. This pie will be extraordinarily rich. Plan your nap accordingly.');
+    }
+
+    // Chicken broth in a sweet context (unlikely but just in case)
+    if (name.includes('chicken broth') && w >= 600) {
+      tasteWarnings.push('🍗 Truly committed to the savory life. This pot pie means business.');
+    }
+
+    // Ginger — ground, over 8g
+    if (name.includes('ginger') && name.includes('ground')) {
+      if (w >= 10) tasteWarnings.push('🫚 That\'s a fierce amount of ginger. Your filling will have opinions and express them strongly.');
+      else if (w >= 6) tasteWarnings.push('🫚 Bold ginger — warm, spicy, and not subtle. Pairs beautifully with pumpkin or peach.');
+    }
+
+    // Allspice over 5g
+    if (name.includes('allspice')) {
+      if (w >= 8) tasteWarnings.push('🌿 Heavy allspice — this pie will taste like it was spiced by someone who really means it.');
+      else if (w >= 5) tasteWarnings.push('🌿 Noticeable allspice — warm and complex, just make sure it\'s not doing all the talking.');
+    }
       if (w >= 12) tasteWarnings.push('🌸 That\'s a lot of almond extract — warning: may taste like marzipan furniture polish.');
       else if (w >= 8) tasteWarnings.push('🌸 Strong almond extract presence — reminiscent of amaretto, maraschino cherries, and sunscreen.');
     }

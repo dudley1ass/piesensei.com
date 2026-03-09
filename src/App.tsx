@@ -333,12 +333,6 @@ export default function App() {
               {/* Recipe info card */}
               <div className="mb-4 pb-4 border-b border-gray-100">
                 <p className="text-sm text-gray-500 italic mb-2">{selectedPie.description}</p>
-                {selectedPie.source && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 border border-amber-200 rounded-lg">
-                    <span className="text-xs">📜</span>
-                    <span className="text-xs text-amber-800 font-medium">{selectedPie.source}</span>
-                  </div>
-                )}
               </div>
 
               {Object.entries(groupedRecipe).map(([cat, items]) => (

@@ -21,7 +21,6 @@ export interface PieRecipe {
   name: string;
   emoji: string;
   description: string;
-  source?: string;
   techniqueTip?: string;
   ingredients: { name: string; amount: number }[];
 }
@@ -39,7 +38,7 @@ export const pieCategories: PieCategory[] = [
     crustType: 'Double flaky butter crust',
     techniques: ['Double-crust pastry', 'Starch thickening', 'Venting & lattice', 'Fruit maceration'],
     pies: [
-      { id: 'apple-classic', name: 'Classic Apple Pie', emoji: '\u{1F34E}', description: 'The timeless American apple pie — tart apples, warm spice, and a flaky double crust.', source: 'Boston Cooking-School Cook Book, Fannie Farmer 1910', techniqueTip: 'Toss sliced apples with sugar and let sit 30 min — released juice concentrates flavor and prevents soggy bottom.',
+      { id: 'apple-classic', name: 'Classic Apple Pie', emoji: '\u{1F34E}', description: 'The timeless American apple pie — tart apples, warm spice, and a flaky double crust.', techniqueTip: 'Toss sliced apples with sugar and let sit 30 min — released juice concentrates flavor and prevents soggy bottom.',
         ingredients: [{name:'All-Purpose Flour',amount:300},{name:'Unsalted Butter',amount:170},{name:'Ice Water',amount:80},{name:'Salt',amount:5},{name:'Granulated Sugar',amount:150},{name:'Brown Sugar (Light)',amount:50},{name:'Cornstarch',amount:28},{name:'Cinnamon',amount:5},{name:'Nutmeg',amount:1},{name:'Lemon Juice',amount:15}]},
       { id: 'apple-caramel', name: 'Salted Caramel Apple Pie', emoji: '\u{1F36E}', description: 'Tart Granny Smith apples in a rich salted caramel sauce under a butter-crunch lattice top.', techniqueTip: 'Pre-cook the caramel sauce and cool before adding to apples — prevents a watery filling.',
         ingredients: [{name:'All-Purpose Flour',amount:300},{name:'Unsalted Butter',amount:185},{name:'Ice Water',amount:80},{name:'Salt',amount:8},{name:'Brown Sugar (Dark)',amount:180},{name:'Heavy Cream',amount:60},{name:'Cornstarch',amount:25},{name:'Cinnamon',amount:4}]},
@@ -65,13 +64,13 @@ export const pieCategories: PieCategory[] = [
     crustType: 'Single blind-baked flaky crust',
     techniques: ['Egg custard baking', 'Blind-baked crust', 'Tempering eggs', 'Jiggle test doneness'],
     pies: [
-      { id: 'pumpkin-classic', name: 'Classic Pumpkin Pie', emoji: '\u{1F383}', description: 'The definitive Thanksgiving pumpkin pie — silky smooth, warmly spiced, and perfectly set.', source: 'Boston Cooking-School Cook Book, Fannie Farmer 1910', techniqueTip: 'Blind bake the crust fully before adding the custard — a raw crust base cannot compete with the wet filling.',
+      { id: 'pumpkin-classic', name: 'Classic Pumpkin Pie', emoji: '\u{1F383}', description: 'The definitive Thanksgiving pumpkin pie — silky smooth, warmly spiced, and perfectly set.', techniqueTip: 'Blind bake the crust fully before adding the custard — a raw crust base cannot compete with the wet filling.',
         ingredients: [{name:'All-Purpose Flour',amount:150},{name:'Unsalted Butter',amount:85},{name:'Ice Water',amount:40},{name:'Salt',amount:5},{name:'Pumpkin Puree',amount:425},{name:'Brown Sugar (Light)',amount:130},{name:'Granulated Sugar',amount:50},{name:'Whole Egg (large)',amount:150},{name:'Evaporated Milk',amount:355},{name:'Cinnamon',amount:5},{name:'Ginger (Ground)',amount:3},{name:'Nutmeg',amount:2},{name:'Allspice',amount:1},{name:'Vanilla Extract',amount:5}]},
       { id: 'sweet-potato', name: 'Southern Sweet Potato Pie', emoji: '\u{1F360}', description: 'Sweeter and more complex than pumpkin — roasted sweet potato with brown butter and vanilla.', techniqueTip: 'Roast (not boil) the sweet potatoes to concentrate sugar and drive off moisture for a firmer set.',
         ingredients: [{name:'All-Purpose Flour',amount:150},{name:'Unsalted Butter',amount:85},{name:'Ice Water',amount:40},{name:'Salt',amount:4},{name:'Sweet Potato',amount:500},{name:'Brown Sugar (Dark)',amount:160},{name:'Whole Egg (large)',amount:150},{name:'Evaporated Milk',amount:300},{name:'Unsalted Butter',amount:55},{name:'Cinnamon',amount:4},{name:'Nutmeg',amount:2},{name:'Vanilla Extract',amount:8}]},
       { id: 'maple-custard', name: 'Maple Custard Pie', emoji: '\u{1F341}', description: 'Pure maple syrup custard with cream — simple, elegant, deeply flavored.', techniqueTip: 'Use Grade A Dark maple syrup for the most intense maple flavor.',
         ingredients: [{name:'All-Purpose Flour',amount:150},{name:'Unsalted Butter',amount:85},{name:'Ice Water',amount:40},{name:'Salt',amount:3},{name:'Maple Syrup',amount:240},{name:'Whole Egg (large)',amount:200},{name:'Heavy Cream',amount:240},{name:'Vanilla Extract',amount:5},{name:'Nutmeg',amount:1}]},
-      { id: 'lemon-meringue', name: 'Lemon Meringue Pie', emoji: '\u{1F34B}', description: 'Bright starch-set lemon curd under a billowing toasted meringue — the ultimate showpiece pie.', source: 'Boston Cooking-School Cook Book, Fannie Farmer 1910', techniqueTip: 'Spread meringue over HOT filling immediately — the hot curd cooks the meringue base and prevents weeping.',
+      { id: 'lemon-meringue', name: 'Lemon Meringue Pie', emoji: '\u{1F34B}', description: 'Bright starch-set lemon curd under a billowing toasted meringue — the ultimate showpiece pie.', techniqueTip: 'Spread meringue over HOT filling immediately — the hot curd cooks the meringue base and prevents weeping.',
         ingredients: [{name:'All-Purpose Flour',amount:150},{name:'Unsalted Butter',amount:85},{name:'Ice Water',amount:40},{name:'Salt',amount:3},{name:'Granulated Sugar',amount:300},{name:'Cornstarch',amount:42},{name:'Lemon Juice',amount:160},{name:'Lemon Zest',amount:8},{name:'Whole Egg (large)',amount:200},{name:'Unsalted Butter',amount:55},{name:'Cream of Tartar',amount:2}]},
       { id: 'key-lime', name: 'Key Lime Pie', emoji: '\u{1F7E2}', description: 'Acid-set condensed milk filling in a graham crust — chemistry, not just baking, sets this iconic pie.', techniqueTip: 'Real key lime juice is essential — its floral bitterness is irreplaceable.',
         ingredients: [{name:'Graham Cracker Crumbs',amount:200},{name:'Unsalted Butter',amount:85},{name:'Granulated Sugar',amount:35},{name:'Sweetened Condensed Milk',amount:400},{name:'Lime Juice',amount:120},{name:'Whole Egg (large)',amount:100},{name:'Lime Zest',amount:5}]},
@@ -91,7 +90,7 @@ export const pieCategories: PieCategory[] = [
     crustType: 'Single unbaked flaky crust',
     techniques: ['Syrup-egg filling', 'Nut suspension', 'Chess custard', 'Molasses crumb layering'],
     pies: [
-      { id: 'pecan-classic', name: 'Southern Pecan Pie', emoji: '\u{1FAD9}', description: 'The gold standard — dark corn syrup, brown sugar, and whole pecans in a buttery flaky crust.', source: 'Classic American recipe, circa 1940s', techniqueTip: 'Pull from the oven when edges are set but center has a 2-inch jiggle — carryover heat finishes perfectly.',
+      { id: 'pecan-classic', name: 'Southern Pecan Pie', emoji: '\u{1FAD9}', description: 'The gold standard — dark corn syrup, brown sugar, and whole pecans in a buttery flaky crust.', techniqueTip: 'Pull from the oven when edges are set but center has a 2-inch jiggle — carryover heat finishes perfectly.',
         ingredients: [{name:'All-Purpose Flour',amount:150},{name:'Unsalted Butter',amount:85},{name:'Ice Water',amount:40},{name:'Salt',amount:5},{name:'Corn Syrup',amount:240},{name:'Brown Sugar (Dark)',amount:160},{name:'Whole Egg (large)',amount:150},{name:'Unsalted Butter',amount:55},{name:'Vanilla Extract',amount:8},{name:'Pecans',amount:225}]},
       { id: 'pecan-bourbon', name: 'Bourbon Pecan Pie', emoji: '\u{1F943}', description: 'A splash of bourbon deepens caramel notes and cuts the sweetness — the grown-up pecan pie.', techniqueTip: 'Add bourbon off-heat after the filling is mixed — cooking drives off flavor.',
         ingredients: [{name:'All-Purpose Flour',amount:150},{name:'Unsalted Butter',amount:85},{name:'Ice Water',amount:40},{name:'Salt',amount:5},{name:'Corn Syrup',amount:200},{name:'Brown Sugar (Dark)',amount:180},{name:'Whole Egg (large)',amount:150},{name:'Unsalted Butter',amount:55},{name:'Vanilla Extract',amount:5},{name:'Pecans',amount:225}]},
