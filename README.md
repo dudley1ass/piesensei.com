@@ -1,47 +1,39 @@
-# 🎂 CakeSensei
+# 🥧 PieSensei
 
-A professional cake recipe builder with real baking science.
+A professional pie recipe builder with real baking science.
 
 ## Features
 
-- **10 cake type formulas** — Butter, Foam, Chiffon, Oil, Cheesecake, Mousse, Brownie, Tart, Mochi, and Genoise
+- **6 pie family formulas** — Fruit, Custard, Sugar, Cream, Mousse, and Savory
+- **30+ recipes** — Classic Apple, Pumpkin, Pecan, French Silk, Chicken Pot Pie, and more
 - **Ingredient editor** — add, remove, swap, and adjust amounts with metric/imperial/volumetric unit support
-- **Cake science metrics** — moisture, tenderness, sweetness, richness, and lightness scores
-- **Nutrition facts** — full macro breakdown per serving, FDA-style label
-- **Baking instructions** — auto-generated based on cake type, weight, and servings
+- **Crust & topping panel** — choose from all-butter, shortening, graham, pâte sucrée, or mashed potato toppings
+- **Pie science metrics** — moisture, fat ratio, sweetness, and texture scores
+- **Nutrition facts** — full macro breakdown per slice, FDA-style label
+- **Baking instructions** — auto-generated based on pie type, weight, and servings
 
 ## Getting Started
 
-```bash
+```
 npm install
 npm run dev
 ```
 
-Then open [http://localhost:5173](http://localhost:5173).
-
-## Project Structure
+## Build
 
 ```
-src/
-├── types/
-│   ├── cake.ts          # Core types: Ingredient, RecipeIngredient, CakeMetrics
-│   └── cakeTypes.ts     # CakeType definitions and the 10 base formulas
-├── data/
-│   └── ingredients.ts   # Full ingredients database (~100 ingredients)
-├── utils/
-│   └── cakeCalculations.ts  # Science scoring and metric calculations
-├── components/
-│   ├── CakeTypeSelector.tsx  # Landing page / cake type picker
-│   ├── MetricsDisplay.tsx    # Science scores + ratio charts
-│   ├── NutritionFacts.tsx    # FDA-style nutrition label
-│   └── BakingInstructions.tsx # Step-by-step baking guide
-└── App.tsx              # Main app with ingredient editor
+npm install && vite build
 ```
 
-## Tech Stack
+Output is in the `dist/` folder.
 
-- React 18 + TypeScript
-- Vite
-- Tailwind CSS
-- Lucide React icons
-"# piesensei.com" 
+## Pie Families
+
+| Family | Recipes | Key Technique |
+|--------|---------|---------------|
+| 🍎 Fruit Pies | 6 | Double-crust pastry, starch thickening |
+| 🎃 Custard Pies | 6 | Blind-baked crust, egg custard set |
+| 🥜 Sugar Pies | 6 | Syrup-egg filling, caramelized fudgy texture |
+| 🍫 Cream Pies | 5 | Cooked pastry cream, stabilized whipped topping |
+| 🎩 Mousse Pies | 5 | No-bake aerated mousse, fat crystallization |
+| 🍗 Savory Pies | 4 | Roux gravy, double crust or mashed potato topping |

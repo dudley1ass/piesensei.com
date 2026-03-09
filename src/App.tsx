@@ -395,7 +395,14 @@ export default function App() {
                     {items.map(ing => <IngredientRow key={ing.recipeId} ing={ing} mode={mode} onAmountChange={updateCrustAmount} onSwap={swapCrustIngredient} onRemove={removeCrustIngredient} />)}
                   </div>
                 ))}
-                {crustRecipe.length === 0 && <div className="text-center py-6 text-gray-400 text-sm">Select a crust style above or click Add.</div>}
+                {crustRecipe.length === 0 && selectedCrustType?.id !== 'premade' && <div className="text-center py-6 text-gray-400 text-sm">Select a crust style above or click Add.</div>}
+                {crustRecipe.length === 0 && selectedCrustType?.id === 'premade' && selectedCrustName && (
+                  <div className="py-4 px-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+                    <div className="font-semibold mb-1">🛒 Store-Bought Crust Selected</div>
+                    <div className="text-xs text-amber-700">{selectedCrustType.recipes.find(r => r.name === selectedCrustName)?.description}</div>
+                    <div className="mt-2 text-xs text-amber-600 italic">No ingredients to edit — pick up at your grocery store's freezer or refrigerator aisle.</div>
+                  </div>
+                )}
                 {crustRecipe.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
                     <span className="text-sm font-semibold text-gray-700">Crust Weight</span>

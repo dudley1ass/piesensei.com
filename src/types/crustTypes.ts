@@ -239,7 +239,100 @@ export const crustTypes: CrustType[] = [
   },
 
   // ══════════════════════════════════════════════════════════
-  // 5. MASHED POTATO TOPPING
+  // 5. STORE-BOUGHT / PREMADE CRUSTS
+  // ══════════════════════════════════════════════════════════
+  {
+    id: 'premade',
+    name: 'Store-Bought / Premade',
+    emoji: '🛒',
+    description: 'Ready-to-use crusts from the freezer or refrigerator aisle — no mixing required. Great for weeknight pies.',
+    baseFormula: [],
+    recipes: [
+      {
+        group: 'Frozen Shells',
+        name: 'Pillsbury Frozen Pie Crust',
+        emoji: '❄️',
+        description: 'Classic frozen deep-dish shell. Thaw 15 min, prick, blind-bake at 425°F for 10–12 min before filling.',
+        pairsWell: ['custard', 'cream', 'sugar', 'mousse', 'fruit'],
+        ingredients: [],
+      },
+      {
+        group: 'Frozen Shells',
+        name: 'Marie Callender\'s Frozen Deep Dish Shell',
+        emoji: '❄️',
+        description: 'Extra-deep frozen shell — ideal for generous custard or fruit fillings. Bake from frozen at 375°F.',
+        pairsWell: ['custard', 'fruit', 'sugar'],
+        ingredients: [],
+      },
+      {
+        group: 'Frozen Shells',
+        name: 'Pet-Ritz Frozen Pie Shell',
+        emoji: '❄️',
+        description: 'Budget-friendly standard-depth frozen shell. Available in 2-packs. Thaw before filling.',
+        pairsWell: ['custard', 'cream', 'sugar'],
+        ingredients: [],
+      },
+      {
+        group: 'Refrigerated Roll-Out',
+        name: 'Pillsbury Refrigerated Pie Crust (Roll-Out)',
+        emoji: '🥶',
+        description: 'Rolled dough in a box — unroll, press into your pan, and bake. Makes single or double crust. No thawing needed.',
+        pairsWell: ['fruit', 'custard', 'sugar', 'savory'],
+        ingredients: [],
+      },
+      {
+        group: 'Refrigerated Roll-Out',
+        name: 'Trader Joe\'s Pie Crust Rounds',
+        emoji: '🥶',
+        description: 'All-butter refrigerated rounds — better flavor than most store options. Roll out slightly before use.',
+        pairsWell: ['fruit', 'custard', 'sugar', 'savory'],
+        ingredients: [],
+      },
+      {
+        group: 'Graham Cracker Premade',
+        name: 'Keebler Ready Crust Graham (6 oz)',
+        emoji: '🟫',
+        description: 'Pre-pressed 9-inch graham crust in a foil pan. No baking needed — fill and chill or bake as directed.',
+        pairsWell: ['cream', 'mousse', 'custard'],
+        ingredients: [],
+      },
+      {
+        group: 'Graham Cracker Premade',
+        name: 'Keebler Ready Crust Graham (9 oz Deep Dish)',
+        emoji: '🟫',
+        description: 'Larger deep-dish graham crust — holds more filling for mousse, cream cheese, or key lime pies.',
+        pairsWell: ['cream', 'mousse', 'custard'],
+        ingredients: [],
+      },
+      {
+        group: 'Graham Cracker Premade',
+        name: 'Oreo Cookie Crust (Premade)',
+        emoji: '⚫',
+        description: 'Pre-pressed Oreo crumb crust — pairs perfectly with chocolate mousse, peanut butter cream, or French silk.',
+        pairsWell: ['mousse', 'cream'],
+        ingredients: [],
+      },
+      {
+        group: 'Specialty',
+        name: 'Wholly Wholesome Organic Pie Shell',
+        emoji: '🌿',
+        description: 'Organic, non-GMO frozen pie shell. Slightly smaller than standard — check depth for your recipe.',
+        pairsWell: ['custard', 'fruit', 'sugar', 'cream'],
+        ingredients: [],
+      },
+      {
+        group: 'Specialty',
+        name: 'Wholly Wholesome Gluten-Free Shell',
+        emoji: '🌾',
+        description: 'Frozen gluten-free pie shell made with rice flour blend. Blind-bake as directed on package.',
+        pairsWell: ['custard', 'fruit', 'sugar', 'cream', 'mousse'],
+        ingredients: [],
+      },
+    ],
+  },
+
+  // ══════════════════════════════════════════════════════════
+  // 6. MASHED POTATO TOPPING
   // ══════════════════════════════════════════════════════════
   {
     id: 'mash-topping',
