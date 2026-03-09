@@ -45,9 +45,44 @@ const TASTE_SIGNALS: Record<string, {
   'coconut-shredded': { coconut:1.0 },
   'fruit-mango':      { fruit:1.0, tropical:0.9 },
   'fruit-pineapple':  { fruit:0.9, tropical:1.0, tart:0.5 },
+  'fruit-pineapple-rings': { fruit:0.9, tropical:1.0, tart:0.4 },
   'fruit-dates':      { fruit:0.7, caramel:0.5 },
   'fruit-fig':        { fruit:0.8, earthy:0.3 },
   'fruit-peach':      { fruit:1.0, tart:0.3 },
+  'fruit-applesauce': { fruit:0.8, tart:0.2 },
+
+  // ── Pie-specific fruit & filling ingredients ──────────────────
+  'pumpkin-puree':    { earthy:0.8, spice:0.2 },     // pumpkin puree (pie-specific id)
+  'fruit-pumpkin':    { earthy:0.8, spice:0.2 },     // alias
+  'sweet-potato':     { earthy:0.6, caramel:0.3 },
+  'banana-fresh':     { fruit:0.9, tropical:0.5 },
+  'lemon-juice':      { citrus:1.0, tart:1.0 },
+  'lime-juice':       { citrus:1.0, tart:1.0 },
+  'juice-lemon':      { citrus:1.0, tart:1.0 },      // alias
+  'juice-lime':       { citrus:1.0, tart:1.0 },      // alias
+  'lemon-zest-pie':   { citrus:1.0, tart:0.8 },
+  'lime-zest':        { citrus:1.0, tart:0.7 },
+  'condensed-milk':   { caramel:0.5 },
+  'corn-syrup':       { caramel:0.6 },
+  'corn-syrup-pie':   { caramel:0.6 },
+  'molasses':         { caramel:0.8, bitter:0.4 },
+  'pecans-whole':     { nutty:1.0, caramel:0.3 },
+  'walnuts-whole':    { nutty:1.0, bitter:0.2 },
+  'dark-chocolate':   { chocolate:1.0, bitter:0.7 },
+  'milk-coconut-can': { coconut:1.0 },
+  'milk-coconut-box': { coconut:0.8 },
+  'milk-buttermilk':  { tart:0.4 },
+  'evaporated-milk':  { caramel:0.2 },
+  'cream-of-tartar':  { tart:0.3 },
+  'cornmeal-yellow':  { earthy:0.2 },
+  'chicken-broth':    { savory:1.0 },
+  'black-pepper':     { spice:0.5, savory:0.3 },
+  'thyme-dried':      { savory:0.6, earthy:0.3 },
+  'rosemary-dried':   { savory:0.7, earthy:0.4 },
+  'ginger-ground':    { spice:1.0 },
+  'spice-allspice':   { spice:0.9 },
+  'fruit-applesauce': { fruit:0.8, tart:0.2 },
+  'fruit-pineapple-rings': { fruit:0.9, tropical:1.0, tart:0.4 },
 
   // nuts
   'nut-walnut':     { nutty:1.0, bitter:0.3 },
@@ -110,21 +145,21 @@ const TASTE_SIGNALS: Record<string, {
 // How much of each ingredient (in g) constitutes a "full" signal contribution
 const TASTE_SATURATION: Record<string, number> = {
   chocolate: 80,   // 80g cocoa → full chocolate
-  fruit: 200,
+  fruit: 500,      // pies use 500-900g fruit — raised from 200
   tart: 150,
   bitter: 60,
-  nutty: 100,
-  spice: 15,
+  nutty: 200,      // pecan pies use 200-300g nuts — raised from 100
+  spice: 40,       // raised from 15 — 5g cinnamon should be ~medium not max
   floral: 8,
-  caramel: 100,
-  citrus: 20,
+  caramel: 150,    // corn syrup/molasses pies — raised from 100
+  citrus: 80,      // lemon/lime juice in pies is 60-160g — raised from 20
   tropical: 150,
-  earthy: 150,
+  earthy: 300,     // pumpkin puree is 400-800g — raised from 150
   boozy: 60,
-  savory: 50,
+  savory: 80,      // raised from 50 for pot pie broth/meat
   minty: 5,
   coffee: 10,
-  coconut: 120,
+  coconut: 200,    // coconut cream pies use full cans — raised from 120
 };
 
 type FlavorKey = keyof typeof TASTE_SATURATION;
