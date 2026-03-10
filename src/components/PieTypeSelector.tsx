@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { ChefHat, ChevronRight } from 'lucide-react';
 import { PieCategory, PieRecipe } from '../types/pieTypes';
+import { PiePantryModal } from './PiePantryModal';
 
 interface PieTypeSelectorProps {
   categories: PieCategory[];
@@ -7,19 +9,40 @@ interface PieTypeSelectorProps {
 }
 
 export function PieTypeSelector({ categories, onSelectCategory }: PieTypeSelectorProps) {
+  const [showPantry, setShowPantry] = useState(false);
+
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #fdf6e3 0%, #fef3c7 50%, #fde68a 100%)' }}>
       <header className="text-white shadow-lg" style={{ background: 'linear-gradient(135deg, #92400e, #b45309, #d97706)' }}>
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <span className="text-4xl">🥧</span>
-            <div>
-              <h1 className="text-3xl font-bold" style={{ fontFamily: 'Georgia, serif' }}>PieSensei</h1>
-              <p className="text-amber-100 text-sm">6 foundations · 30+ recipes · every pie technique covered</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-4xl">🥧</span>
+              <div>
+                <h1 className="text-3xl font-bold" style={{ fontFamily: 'Georgia, serif' }}>PieSensei</h1>
+                <p className="text-amber-100 text-sm">6 foundations · 30+ recipes · every pie technique covered</p>
+              </div>
             </div>
+            <button
+              onClick={() => setShowPantry(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all bg-white/20 hover:bg-white/30 text-white border border-white/30 backdrop-blur-sm"
+            >
+              <ChefHat className="w-4 h-4" />
+              What Can I Make?
+            </button>
           </div>
         </div>
       </header>
+
+      {showPantry && (
+        <PiePantryModal
+          onClose={() => setShowPantry(false)}
+          onSelectPie={(category, pie) => {
+            setShowPantry(false);
+            onSelectCategory(category, pie);
+          }}
+        />
+      )}
 
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto">
