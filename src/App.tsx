@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronDown, Plus, Trash2, ArrowLeft, Search, X } from 'lucide-react';
+import { ChevronDown, Plus, Trash2, ArrowLeft, Search, X, Printer } from 'lucide-react';
 
 import { Ingredient, RecipeIngredient, MeasurementMode } from './types/cake';
 import { PieCategory, PieRecipe, pieCategories } from './types/pieTypes';
@@ -275,6 +275,80 @@ export default function App() {
     return <PieTypeSelector categories={pieCategories} onSelectCategory={handleSelectPie} />;
   }
 
+  const handlePrint = () => {
+    const fillingLines = recipe.map(ing => {
+      const amt = gramsTo(ing.amount, mode === 'volumetric' ? 'metric' : mode, ing.category);
+      return `  • ${ing.name}: ${amt}`;
+    }).join('\n');
+
+    const crustLines = crustRecipe.length > 0
+      ? '\n\nCRUST & TOPPING:\n' + crustRecipe.map(ing => {
+          const amt = gramsTo(ing.amount, mode === 'volumetric' ? 'metric' : mode, ing.category);
+          return `  • ${ing.name}: ${amt}`;
+        }).join('\n')
+      : '';
+
+    const printContent = `
+      <html>
+        <head>
+          <title>${selectedPie.name} — PieSensei</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: Georgia, serif; padding: 40px; max-width: 700px; margin: 0 auto; color: #1a1a1a; }
+            .header { border-bottom: 3px solid #d97706; padding-bottom: 16px; margin-bottom: 24px; }
+            .logo { font-size: 11px; color: #d97706; font-family: sans-serif; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+            h1 { font-size: 28px; color: #1a1a1a; margin-bottom: 4px; }
+            .category { font-size: 13px; color: #888; font-family: sans-serif; }
+            .desc { font-size: 14px; color: #555; font-style: italic; margin-bottom: 24px; line-height: 1.6; }
+            .meta { display: flex; gap: 24px; margin-bottom: 24px; }
+            .meta-item { font-family: sans-serif; font-size: 12px; color: #666; }
+            .meta-item strong { display: block; font-size: 15px; color: #1a1a1a; }
+            h2 { font-size: 15px; font-family: sans-serif; font-weight: 700; color: #d97706; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; margin-top: 24px; border-bottom: 1px solid #fde68a; padding-bottom: 4px; }
+            .ingredient-list { list-style: none; }
+            .ingredient-list li { padding: 5px 0; font-size: 14px; border-bottom: 1px dotted #eee; display: flex; justify-content: space-between; }
+            .ingredient-list li:last-child { border-bottom: none; }
+            .ing-name { color: #333; }
+            .ing-amount { color: #555; font-family: sans-serif; font-size: 13px; }
+            .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #eee; font-size: 11px; color: #aaa; font-family: sans-serif; text-align: center; }
+            @media print { body { padding: 20px; } }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo">🥧 PieSensei</div>
+            <h1>${selectedPie.emoji} ${selectedPie.name}</h1>
+            <div class="category">${selectedCategory.name}</div>
+          </div>
+          ${selectedPie.description ? `<p class="desc">${selectedPie.description}</p>` : ''}
+          <div class="meta">
+            <div class="meta-item"><strong>${servings}</strong>Slices</div>
+            <div class="meta-item"><strong>${gramsTo(metrics.totalWeight, mode === 'volumetric' ? 'metric' : mode, 'default')}</strong>Total Filling Weight</div>
+            ${crustMetrics ? `<div class="meta-item"><strong>${gramsTo(crustMetrics.totalWeight, mode === 'volumetric' ? 'metric' : mode, 'default')}</strong>Crust Weight</div>` : ''}
+            <div class="meta-item"><strong>${mode === 'metric' ? 'g' : mode === 'imperial' ? 'oz/lb' : 'cups'}</strong>Units</div>
+          </div>
+          <h2>Filling Ingredients</h2>
+          <ul class="ingredient-list">
+            ${recipe.map(ing => `<li><span class="ing-name">${ing.name}</span><span class="ing-amount">${gramsTo(ing.amount, mode === 'volumetric' ? 'metric' : mode, ing.category)}</span></li>`).join('')}
+          </ul>
+          ${crustRecipe.length > 0 ? `
+          <h2>Crust & Topping${selectedCrustName ? ` — ${selectedCrustName}` : ''}</h2>
+          <ul class="ingredient-list">
+            ${crustRecipe.map(ing => `<li><span class="ing-name">${ing.name}</span><span class="ing-amount">${gramsTo(ing.amount, mode === 'volumetric' ? 'metric' : mode, ing.category)}</span></li>`).join('')}
+          </ul>` : ''}
+          <div class="footer">Printed from PieSensei · piesensei.com</div>
+        </body>
+      </html>
+    `;
+
+    const win = window.open('', '_blank');
+    if (win) {
+      win.document.write(printContent);
+      win.document.close();
+      win.focus();
+      setTimeout(() => { win.print(); }, 300);
+    }
+  };
+
   const metrics = calculateCakeMetrics(recipe);
   const crustMetrics = crustRecipe.length > 0 ? calculateCakeMetrics(crustRecipe) : null;
   const combinedMetrics = crustRecipe.length > 0 ? calculateCakeMetrics([...recipe, ...crustRecipe]) : null;
@@ -310,6 +384,14 @@ export default function App() {
                 <span className="text-xs text-white/80">Slices:</span>
                 <input type="number" value={servings} min={1} max={16} onChange={e => setServings(Math.max(1, parseInt(e.target.value) || 1))} className="w-10 bg-white/20 rounded text-white text-xs text-center outline-none" />
               </div>
+              <button
+                onClick={handlePrint}
+                title="Print recipe"
+                className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                Print
+              </button>
             </div>
           </div>
         </div>

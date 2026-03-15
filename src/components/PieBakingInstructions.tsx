@@ -1,4 +1,4 @@
-import { Flame, Clock, Layers, Info } from 'lucide-react';
+import { Flame, Clock, Layers, Info, BookOpen } from 'lucide-react';
 
 interface PieBakingInstructionsProps {
   pieTypeId: string;
@@ -417,6 +417,43 @@ export function PieBakingInstructions({ pieTypeId, crustTypeId, totalWeight, ser
             </li>
           ))}
         </ul>
+      </div>
+
+      {/* Pie Science Articles */}
+      <div className="bg-white rounded-2xl shadow-md p-5">
+        <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+          <BookOpen className="w-4 h-4 text-amber-600" />
+          <span>Learn the Science</span>
+        </h3>
+        <p className="text-xs text-gray-500 mb-3">Understand why pie works the way it does</p>
+        <div className="space-y-2">
+          <a
+            href="https://senseifood.com/pie-science/why-pie-crust-is-flaky"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50 transition-all group"
+          >
+            <span className="text-xl">🥧</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-gray-800 group-hover:text-amber-700">Why Pie Crust Is Flaky</div>
+              <div className="text-xs text-gray-400">The science of fat, gluten & lamination</div>
+            </div>
+            <span className="text-gray-300 group-hover:text-amber-400 text-xs">↗</span>
+          </a>
+          <a
+            href="https://senseifood.com/pie-science/why-pie-crust-shrinks"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-amber-300 hover:bg-amber-50 transition-all group"
+          >
+            <span className="text-xl">📐</span>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-gray-800 group-hover:text-amber-700">Why Pie Crust Shrinks</div>
+              <div className="text-xs text-gray-400">Gluten tension, resting & blind baking</div>
+            </div>
+            <span className="text-gray-300 group-hover:text-amber-400 text-xs">↗</span>
+          </a>
+        </div>
       </div>
     </div>
   );
