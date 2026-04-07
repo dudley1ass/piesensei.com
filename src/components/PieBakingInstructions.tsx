@@ -2,6 +2,7 @@ import { Flame, Clock, Layers, Info, BookOpen } from 'lucide-react';
 
 interface PieBakingInstructionsProps {
   pieTypeId: string;
+  pieId?: string | null;
   crustTypeId?: string | null;
   totalWeight: number;
   servings: number;
@@ -316,9 +317,16 @@ const ID_MAP: Record<string, string> = {
   'savory':  'savory-pastry',
 };
 
-export function PieBakingInstructions({ pieTypeId, crustTypeId, totalWeight, servings, measurementMode, recipeName }: PieBakingInstructionsProps) {
-  const resolvedId = ID_MAP[pieTypeId] ?? pieTypeId;
-  const data = PIE_BAKING_DATA[resolvedId];
+const SAVORY_CASSEROLE_PIE_IDS = new Set(['shepherds-pie', 'cottage-pie']);
+
+export function getPieBakingData(pieTypeId: string, pieId?: string | null): BakingData | null {
+  let key = ID_MAP[pieTypeId] ?? pieTypeId;
+  if (pieTypeId === 'savory' && pieId && SAVORY_CASSEROLE_PIE_IDS.has(pieId)) key = 'savory-casserole';
+  return PIE_BAKING_DATA[key] ?? null;
+}
+
+export function PieBakingInstructions({ pieTypeId, pieId, totalWeight, servings, measurementMode }: PieBakingInstructionsProps) {
+  const data = getPieBakingData(pieTypeId, pieId);
 
   if (!data) {
     return (

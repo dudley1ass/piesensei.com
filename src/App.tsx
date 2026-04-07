@@ -9,7 +9,7 @@ import { calculateCakeMetrics } from './utils/cakeCalculations';
 import { PieTypeSelector } from './components/PieTypeSelector';
 import { MetricsDisplay } from './components/MetricsDisplay';
 import { NutritionFacts } from './components/NutritionFacts';
-import { PieBakingInstructions } from './components/PieBakingInstructions';
+import { getPieBakingData, PieBakingInstructions } from './components/PieBakingInstructions';
 
 // ─── Unit helpers (same as CakeSensei) ───────────────────────
 const DENSITY: Record<string, number> = {
@@ -75,6 +75,17 @@ function gramsTo(g: number, mode: MeasurementMode, cat: string): string {
   if(mode==='imperial')return g>=450?`${(g/453.592).toFixed(2)} lb`:`${(g/28.3495).toFixed(2)} oz`;
   const d=DENSITY[cat]??DENSITY.default;const cups=g/(d*236.588);
   return['flour','sugar','leavening','spice'].includes(cat)?formatCups(cups):cups>=4?`${(cups/4).toFixed(1)} qt`:formatCups(cups);
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/** Sums amounts for duplicate ingredient names (e.g. crust vs roux flour in one list). */
+function mergePieIngredientAmounts(rows: { name: string; amount: number }[]): { name: string; amount: number }[] {
+  const map = new Map<string, number>();
+  for (const row of rows) map.set(row.name, (map.get(row.name) ?? 0) + row.amount);
+  return Array.from(map.entries()).map(([name, amount]) => ({ name, amount }));
 }
 
 const CAT_CONFIG: Record<string, { emoji: string; label: string }> = {
@@ -245,7 +256,7 @@ export default function App() {
   const handleSelectPie = (category: PieCategory, pie: PieRecipe) => {
     setSelectedCategory(category);
     setSelectedPie(pie);
-    setRecipe(makeRecipe(pie.ingredients));
+    setRecipe(makeRecipe(mergePieIngredientAmounts(pie.ingredients)));
     setCrustRecipe([]);
     setSelectedCrustType(null);
     setSelectedCrustName(null);
@@ -271,74 +282,149 @@ export default function App() {
   const removeCrustIngredient = useCallback((id: string) => setCrustRecipe(p => p.filter(r => r.recipeId !== id)), []);
   const addCrustIngredient = (ing: Ingredient) => setCrustRecipe(p => [...p, { ...ing, recipeId: `crust-${ing.id}-${Date.now()}`, amount: ing.defaultAmount }]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedCategory?.id, selectedPie?.id, activeTab]);
+
   if (!selectedCategory || !selectedPie) {
     return <PieTypeSelector categories={pieCategories} onSelectCategory={handleSelectPie} />;
   }
 
+  const pieMetricsOpts = { product: 'pie' as const };
+  const metrics = calculateCakeMetrics(recipe, pieMetricsOpts);
+  const crustMetrics = crustRecipe.length > 0 ? calculateCakeMetrics(crustRecipe, pieMetricsOpts) : null;
+  const combinedMetrics = crustRecipe.length > 0 ? calculateCakeMetrics([...recipe, ...crustRecipe], pieMetricsOpts) : null;
+  const groupedRecipe = CAT_ORDER.reduce<Record<string, RecipeIngredient[]>>((a, cat) => { const items = recipe.filter(r => r.category === cat); if (items.length) a[cat] = items; return a; }, {});
+  const groupedCrust = CAT_ORDER.reduce<Record<string, RecipeIngredient[]>>((a, cat) => { const items = crustRecipe.filter(r => r.category === cat); if (items.length) a[cat] = items; return a; }, {});
+
   const handlePrint = () => {
-    const fillingLines = recipe.map(ing => {
-      const amt = gramsTo(ing.amount, mode === 'volumetric' ? 'metric' : mode, ing.category);
-      return `  • ${ing.name}: ${amt}`;
-    }).join('\n');
+    const printMode: MeasurementMode = mode === 'volumetric' ? 'metric' : mode;
+    const bakeData = getPieBakingData(selectedCategory.id, selectedPie.id);
+    const stepsOl = bakeData
+      ? `<ol class="steps">${bakeData.steps.map(s => `<li>${escapeHtml(s)}</li>`).join('')}</ol>`
+      : '<p class="muted">Open the Baking tab in PieSensei for full method.</p>';
 
-    const crustLines = crustRecipe.length > 0
-      ? '\n\nCRUST & TOPPING:\n' + crustRecipe.map(ing => {
-          const amt = gramsTo(ing.amount, mode === 'volumetric' ? 'metric' : mode, ing.category);
-          return `  • ${ing.name}: ${amt}`;
-        }).join('\n')
-      : '';
+    const nutritionBase = combinedMetrics ?? metrics;
+    const sliceG = Math.max(1, Math.round(nutritionBase.totalWeight / servings));
+    const f = sliceG / 100;
+    const nCal = (nutritionBase.calories || 0) * f;
+    const nFat = (nutritionBase.fat || 0) * f;
+    const nSat = (nutritionBase.saturatedFat || 0) * f;
+    const nChol = (nutritionBase.cholesterol || 0) * f;
+    const nSod = (nutritionBase.sodium || 0) * f;
+    const nCarb = (nutritionBase.carbs || 0) * f;
+    const nFib = (nutritionBase.fiber || 0) * f;
+    const nSug = (nutritionBase.sugar || 0) * f;
+    const nPro = (nutritionBase.protein || 0) * f;
+    const sci = combinedMetrics ?? metrics;
 
-    const printContent = `
-      <html>
-        <head>
-          <title>${selectedPie.name} — PieSensei</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: Georgia, serif; padding: 40px; max-width: 700px; margin: 0 auto; color: #1a1a1a; }
-            .header { border-bottom: 3px solid #d97706; padding-bottom: 16px; margin-bottom: 24px; }
-            .logo { font-size: 11px; color: #d97706; font-family: sans-serif; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
-            h1 { font-size: 28px; color: #1a1a1a; margin-bottom: 4px; }
-            .category { font-size: 13px; color: #888; font-family: sans-serif; }
-            .desc { font-size: 14px; color: #555; font-style: italic; margin-bottom: 24px; line-height: 1.6; }
-            .meta { display: flex; gap: 24px; margin-bottom: 24px; }
-            .meta-item { font-family: sans-serif; font-size: 12px; color: #666; }
-            .meta-item strong { display: block; font-size: 15px; color: #1a1a1a; }
-            h2 { font-size: 15px; font-family: sans-serif; font-weight: 700; color: #d97706; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; margin-top: 24px; border-bottom: 1px solid #fde68a; padding-bottom: 4px; }
-            .ingredient-list { list-style: none; }
-            .ingredient-list li { padding: 5px 0; font-size: 14px; border-bottom: 1px dotted #eee; display: flex; justify-content: space-between; }
-            .ingredient-list li:last-child { border-bottom: none; }
-            .ing-name { color: #333; }
-            .ing-amount { color: #555; font-family: sans-serif; font-size: 13px; }
-            .footer { margin-top: 40px; padding-top: 12px; border-top: 1px solid #eee; font-size: 11px; color: #aaa; font-family: sans-serif; text-align: center; }
-            @media print { body { padding: 20px; } }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div class="logo">🥧 PieSensei</div>
-            <h1>${selectedPie.emoji} ${selectedPie.name}</h1>
-            <div class="category">${selectedCategory.name}</div>
-          </div>
-          ${selectedPie.description ? `<p class="desc">${selectedPie.description}</p>` : ''}
-          <div class="meta">
-            <div class="meta-item"><strong>${servings}</strong>Slices</div>
-            <div class="meta-item"><strong>${gramsTo(metrics.totalWeight, mode === 'volumetric' ? 'metric' : mode, 'default')}</strong>Total Filling Weight</div>
-            ${crustMetrics ? `<div class="meta-item"><strong>${gramsTo(crustMetrics.totalWeight, mode === 'volumetric' ? 'metric' : mode, 'default')}</strong>Crust Weight</div>` : ''}
-            <div class="meta-item"><strong>${mode === 'metric' ? 'g' : mode === 'imperial' ? 'oz/lb' : 'cups'}</strong>Units</div>
-          </div>
-          <h2>Filling Ingredients</h2>
-          <ul class="ingredient-list">
-            ${recipe.map(ing => `<li><span class="ing-name">${ing.name}</span><span class="ing-amount">${gramsTo(ing.amount, mode === 'volumetric' ? 'metric' : mode, ing.category)}</span></li>`).join('')}
-          </ul>
-          ${crustRecipe.length > 0 ? `
-          <h2>Crust & Topping${selectedCrustName ? ` — ${selectedCrustName}` : ''}</h2>
-          <ul class="ingredient-list">
-            ${crustRecipe.map(ing => `<li><span class="ing-name">${ing.name}</span><span class="ing-amount">${gramsTo(ing.amount, mode === 'volumetric' ? 'metric' : mode, ing.category)}</span></li>`).join('')}
-          </ul>` : ''}
-          <div class="footer">Printed from PieSensei · piesensei.com</div>
-        </body>
-      </html>
-    `;
+    const printContent = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>${escapeHtml(selectedPie.name)} — PieSensei</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font-family: Georgia, serif; padding: 32px; max-width: 720px; margin: 0 auto; color: #1a1a1a; line-height: 1.45; }
+      .header { border-bottom: 3px solid #d97706; padding-bottom: 16px; margin-bottom: 20px; }
+      .logo { font-size: 11px; color: #d97706; font-family: sans-serif; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+      h1 { font-size: 26px; color: #1a1a1a; margin-bottom: 4px; }
+      .category { font-size: 13px; color: #888; font-family: sans-serif; }
+      .desc { font-size: 14px; color: #555; font-style: italic; margin: 16px 0 20px; }
+      .meta { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; font-family: sans-serif; font-size: 12px; color: #666; }
+      .meta strong { display: block; font-size: 14px; color: #1a1a1a; }
+      h2 { font-size: 14px; font-family: sans-serif; font-weight: 700; color: #d97706; text-transform: uppercase; letter-spacing: 1px; margin: 22px 0 10px; border-bottom: 1px solid #fde68a; padding-bottom: 4px; }
+      .ingredient-list { list-style: none; }
+      .ingredient-list li { padding: 6px 0; font-size: 14px; border-bottom: 1px dotted #eee; display: flex; justify-content: space-between; gap: 12px; }
+      .ingredient-list li:last-child { border-bottom: none; }
+      .ing-amount { color: #555; font-family: sans-serif; font-size: 13px; white-space: nowrap; }
+      .steps { margin: 12px 0 0 1.2rem; font-size: 14px; }
+      .steps li { margin-bottom: 10px; }
+      .muted { font-size: 13px; color: #888; font-style: italic; }
+      .page-2 { page-break-before: always; padding-top: 28px; }
+      .nf { border: 2px solid #000; padding: 16px; max-width: 340px; font-family: sans-serif; font-size: 13px; margin: 16px 0; }
+      .nf h3 { font-size: 22px; border-bottom: 6px solid #000; padding-bottom: 6px; margin-bottom: 8px; }
+      .nf .per { font-weight: 700; margin-bottom: 4px; }
+      .nf-row { display: flex; justify-content: space-between; border-bottom: 1px solid #ccc; padding: 4px 0; }
+      .nf-foot { font-size: 11px; margin-top: 10px; padding-top: 8px; border-top: 6px solid #000; }
+      .science { margin-top: 20px; font-size: 14px; }
+      .science .note { background: #fffbeb; border: 1px solid #fde68a; padding: 12px; margin-top: 10px; border-radius: 8px; }
+      .ratios { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 12px; font-family: sans-serif; font-size: 12px; text-align: center; }
+      .ratio-box { border: 1px solid #e5e7eb; padding: 8px; border-radius: 8px; }
+      .footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid #eee; font-size: 11px; color: #aaa; font-family: sans-serif; text-align: center; }
+      @media print { body { padding: 16px; } }
+    </style>
+  </head>
+  <body>
+    <section class="page-1">
+      <div class="header">
+        <div class="logo">🥧 PieSensei</div>
+        <h1>${escapeHtml(selectedPie.emoji + ' ' + selectedPie.name)}</h1>
+        <div class="category">${escapeHtml(selectedCategory.name)}</div>
+      </div>
+      ${selectedPie.description ? `<p class="desc">${escapeHtml(selectedPie.description)}</p>` : ''}
+      <div class="meta">
+        <div><strong>${servings}</strong>Servings (slices)</div>
+        <div><strong>${escapeHtml(gramsTo(metrics.totalWeight, printMode, 'default'))}</strong>Filling weight</div>
+        ${crustMetrics ? `<div><strong>${escapeHtml(gramsTo(crustMetrics.totalWeight, printMode, 'default'))}</strong>Crust weight</div>` : ''}
+        <div><strong>${printMode === 'metric' ? 'Metric (g)' : 'Imperial (oz/lb)'}</strong>Printed units</div>
+      </div>
+      <h2>Filling ingredients</h2>
+      <ul class="ingredient-list">
+        ${recipe.map(ing => `<li><span>${escapeHtml(ing.name)}</span><span class="ing-amount">${escapeHtml(gramsTo(ing.amount, printMode, ing.category))}</span></li>`).join('')}
+      </ul>
+      ${crustRecipe.length > 0 ? `
+      <h2>Crust & topping${selectedCrustName ? ` — ${escapeHtml(selectedCrustName)}` : ''}</h2>
+      <ul class="ingredient-list">
+        ${crustRecipe.map(ing => `<li><span>${escapeHtml(ing.name)}</span><span class="ing-amount">${escapeHtml(gramsTo(ing.amount, printMode, ing.category))}</span></li>`).join('')}
+      </ul>` : ''}
+      <h2>Step-by-step</h2>
+      ${bakeData ? `<p class="muted"><strong>Pan:</strong> ${escapeHtml(bakeData.pan)}</p>` : ''}
+      ${stepsOl}
+      <div class="footer">Printed from PieSensei</div>
+    </section>
+
+    <section class="page-2">
+      <h2>Nutrition facts</h2>
+      <p class="muted" style="font-family:sans-serif;font-size:12px;margin-bottom:8px;">Amount per serving · ${crustRecipe.length > 0 ? 'Filling + crust combined' : 'Filling only'}</p>
+      <div class="nf">
+        <h3>Nutrition Facts</h3>
+        <p class="per">Per serving: ${sliceG}g (${(sliceG * 0.035274).toFixed(2)} oz)</p>
+        <p style="margin-bottom:8px;">Servings per recipe: <strong>${servings}</strong></p>
+        <div style="border-bottom:4px solid #000; padding: 8px 0; font-weight: 700; font-size: 18px; display: flex; justify-content: space-between;">
+          <span>Calories</span><span>${nCal.toFixed(0)}</span>
+        </div>
+        <div class="nf-row"><span>Total fat</span><span>${nFat.toFixed(1)}g</span></div>
+        <div class="nf-row" style="padding-left:12px;font-size:12px;"><span>Sat. fat</span><span>${nSat.toFixed(1)}g</span></div>
+        <div class="nf-row"><span>Cholesterol</span><span>${nChol.toFixed(0)}mg</span></div>
+        <div class="nf-row"><span>Sodium</span><span>${nSod.toFixed(0)}mg</span></div>
+        <div class="nf-row"><span>Total carbohydrate</span><span>${nCarb.toFixed(1)}g</span></div>
+        <div class="nf-row" style="padding-left:12px;font-size:12px;"><span>Fiber</span><span>${nFib.toFixed(1)}g</span></div>
+        <div class="nf-row" style="padding-left:12px;font-size:12px;"><span>Total sugars</span><span>${nSug.toFixed(1)}g</span></div>
+        <div class="nf-row"><span>Protein</span><span>${nPro.toFixed(1)}g</span></div>
+        <div class="nf-foot">* Percent daily values are estimates based on a 2,000 calorie diet.</div>
+      </div>
+
+      <div class="science">
+        <h2>Science &amp; predictions</h2>
+        <p><strong>Category note:</strong> ${escapeHtml(selectedCategory.scienceNote)}</p>
+        <div class="note">
+          <p><strong>Dominant flavour:</strong> ${escapeHtml(sci.dominantFlavor)}</p>
+          <p style="margin-top:8px;font-style:italic;">${escapeHtml(sci.tasteNotes)}</p>
+          ${bakeData ? `<p style="margin-top:10px;"><strong>Doneness:</strong> ${escapeHtml(bakeData.doneness)}</p><p style="margin-top:6px;"><strong>Cooling:</strong> ${escapeHtml(bakeData.coolingNote)}</p>` : ''}
+        </div>
+        <div class="ratios">
+          <div class="ratio-box"><div style="font-weight:800;font-size:18px;color:#a78bfa">${sci.flourRatio.toFixed(1)}%</div><div>Flour</div></div>
+          <div class="ratio-box"><div style="font-weight:800;font-size:18px;color:#fbbf24">${sci.fatRatio.toFixed(1)}%</div><div>Fat</div></div>
+          <div class="ratio-box"><div style="font-weight:800;font-size:18px;color:#f472b6">${sci.sugarRatio.toFixed(1)}%</div><div>Sugar</div></div>
+          <div class="ratio-box"><div style="font-weight:800;font-size:18px;color:#60a5fa">${sci.liquidRatio.toFixed(1)}%</div><div>Liquid</div></div>
+        </div>
+        <p style="margin-top:14px;font-size:13px;"><strong>Gluten:</strong> ${escapeHtml(sci.glutenDevelopment)} · <strong>Crumb:</strong> ${escapeHtml(sci.predictedCrumb)} · <strong>Bake temp (hint):</strong> ${escapeHtml(sci.bakingTemp)}</p>
+      </div>
+      <div class="footer">Printed from PieSensei</div>
+    </section>
+  </body>
+</html>`;
 
     const win = window.open('', '_blank');
     if (win) {
@@ -348,12 +434,6 @@ export default function App() {
       setTimeout(() => { win.print(); }, 300);
     }
   };
-
-  const metrics = calculateCakeMetrics(recipe);
-  const crustMetrics = crustRecipe.length > 0 ? calculateCakeMetrics(crustRecipe) : null;
-  const combinedMetrics = crustRecipe.length > 0 ? calculateCakeMetrics([...recipe, ...crustRecipe]) : null;
-  const groupedRecipe = CAT_ORDER.reduce<Record<string, RecipeIngredient[]>>((a, cat) => { const items = recipe.filter(r => r.category === cat); if (items.length) a[cat] = items; return a; }, {});
-  const groupedCrust = CAT_ORDER.reduce<Record<string, RecipeIngredient[]>>((a, cat) => { const items = crustRecipe.filter(r => r.category === cat); if (items.length) a[cat] = items; return a; }, {});
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #fdf6e3 0%, #fef3c7 50%, #fde68a 100%)' }}>
@@ -524,7 +604,7 @@ export default function App() {
             </div>
             {activeTab === 'metrics' && <MetricsDisplay metrics={metrics} icingMetrics={crustMetrics} combinedMetrics={combinedMetrics} />}
             {activeTab === 'nutrition' && <NutritionFacts metrics={metrics} icingMetrics={crustMetrics} combinedMetrics={combinedMetrics} servingSize={Math.round(metrics.totalWeight / servings)} servingsPerRecipe={servings} />}
-            {activeTab === 'baking' && <PieBakingInstructions pieTypeId={selectedCategory.id} recipeName={selectedPie.name} totalWeight={metrics.totalWeight} servings={servings} measurementMode={mode} />}
+            {activeTab === 'baking' && <PieBakingInstructions pieTypeId={selectedCategory.id} pieId={selectedPie.id} recipeName={selectedPie.name} totalWeight={metrics.totalWeight} servings={servings} measurementMode={mode} />}
           </div>
         </div>
       </main>

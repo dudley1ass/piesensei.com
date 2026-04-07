@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChefHat, ChevronRight } from 'lucide-react';
 import { PieCategory, PieRecipe } from '../types/pieTypes';
 import { PiePantryModal } from './PiePantryModal';
@@ -10,6 +10,10 @@ interface PieTypeSelectorProps {
 
 export function PieTypeSelector({ categories, onSelectCategory }: PieTypeSelectorProps) {
   const [showPantry, setShowPantry] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #fdf6e3 0%, #fef3c7 50%, #fde68a 100%)' }}>

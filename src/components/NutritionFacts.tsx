@@ -7,10 +7,13 @@ interface NutritionFactsProps {
   combinedMetrics?: CakeMetrics | null;
   servingSize: number;
   servingsPerRecipe: number;
+  /** Labels the panel for pies (filling / crust) instead of cake / icing */
+  variant?: 'cake' | 'pie';
 }
 
 export function NutritionFacts({
   metrics, icingMetrics, combinedMetrics, servingSize, servingsPerRecipe,
+  variant = 'pie',
 }: NutritionFactsProps) {
   const hasIcing = !!icingMetrics;
   const [view, setView] = useState<'cake' | 'icing' | 'combined'>(hasIcing ? 'combined' : 'cake');
@@ -57,9 +60,17 @@ export function NutritionFacts({
   const proteinDV     = (protein     / 50)   * 100;
 
   const viewLabel =
-    effectiveView === 'icing'    ? '🧁 Icing only' :
-    effectiveView === 'combined' ? '✨ Cake + Icing (per slice)' :
-    '🎂 Cake only';
+    variant === 'pie'
+      ? effectiveView === 'icing'
+        ? '🥐 Crust only (per serving)'
+        : effectiveView === 'combined'
+          ? '✨ Filling + crust (per serving)'
+          : '🥧 Filling only (per serving)'
+      : effectiveView === 'icing'
+        ? '🧁 Icing only'
+        : effectiveView === 'combined'
+          ? '✨ Cake + Icing (per slice)'
+          : '🎂 Cake only';
 
   return (
     <div className="space-y-4">
@@ -69,7 +80,11 @@ export function NutritionFacts({
           {(['cake', 'icing', 'combined'] as const).map((v) => (
             <button key={v} onClick={() => setView(v)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${effectiveView === v ? 'bg-white text-red-600 shadow' : 'text-gray-500 hover:text-gray-800'}`}>
-              {v === 'cake' ? '🎂 Cake' : v === 'icing' ? '🧁 Icing' : '✨ Combined'}
+              {v === 'cake'
+                ? (variant === 'pie' ? '🥧 Filling' : '🎂 Cake')
+                : v === 'icing'
+                  ? (variant === 'pie' ? '🥐 Crust' : '🧁 Icing')
+                  : '✨ Combined'}
             </button>
           ))}
         </div>
@@ -78,13 +93,14 @@ export function NutritionFacts({
       <div className="bg-white border-2 border-black p-4 max-w-sm font-sans">
         <div className="border-b-8 border-black pb-1">
           <h2 className="text-3xl font-black">Nutrition Facts</h2>
+          <p className="text-sm font-bold text-gray-800 mt-1">Amount per serving</p>
           <p className="text-xs text-gray-500 mt-0.5">{viewLabel}</p>
         </div>
 
         <div className="border-b-4 border-black py-1 text-sm">
           <div>Servings per recipe: <span className="font-bold">{servingsPerRecipe}</span></div>
           <div className="font-bold text-lg">
-            Serving size: {activeServingSize}g ({(activeServingSize * 0.035274).toFixed(2)} oz)
+            Per serving: {activeServingSize}g ({(activeServingSize * 0.035274).toFixed(2)} oz)
           </div>
         </div>
 
@@ -137,8 +153,8 @@ export function NutritionFacts({
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 text-sm">
           <div className="font-semibold text-gray-700 mb-3">⚖️ Weight per slice breakdown</div>
           <div className="space-y-2">
-            <WeightBar label="🎂 Cake"  grams={Math.round(metrics.totalWeight     / servingsPerRecipe)} total={activeServingSize} color="#e67e22" />
-            <WeightBar label="🧁 Icing" grams={Math.round(icingMetrics.totalWeight / servingsPerRecipe)} total={activeServingSize} color="#e91e8c" />
+            <WeightBar label={variant === 'pie' ? '🥧 Filling' : '🎂 Cake'} grams={Math.round(metrics.totalWeight / servingsPerRecipe)} total={activeServingSize} color="#e67e22" />
+            <WeightBar label={variant === 'pie' ? '🥐 Crust' : '🧁 Icing'} grams={Math.round(icingMetrics.totalWeight / servingsPerRecipe)} total={activeServingSize} color="#e91e8c" />
           </div>
           <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-500">
             <span>Total slice weight</span>

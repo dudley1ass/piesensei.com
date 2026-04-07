@@ -32,7 +32,7 @@ const TASTE_SIGNALS: Record<string, {
   'fruit-cherry':     { fruit:1.0, tart:0.5 },
   'fruit-banana':     { fruit:0.9, tropical:0.5 },
   'fruit-apple':      { fruit:0.8, tart:0.3 },
-  'fruit-pumpkin':    { fruit:0.5, earthy:0.5 },
+  'fruit-pumpkin':    { fruit:0.4, earthy:0.7, spice:0.15 },
   'fruit-zucchini':   { earthy:0.4 },
   'fruit-carrot':     { earthy:0.4, fruit:0.3 },
   'zest-lemon':       { citrus:1.0, tart:0.9 },
@@ -53,7 +53,6 @@ const TASTE_SIGNALS: Record<string, {
 
   // ── Pie-specific fruit & filling ingredients ──────────────────
   'pumpkin-puree':    { earthy:0.8, spice:0.2 },     // pumpkin puree (pie-specific id)
-  'fruit-pumpkin':    { earthy:0.8, spice:0.2 },     // alias
   'sweet-potato':     { earthy:0.6, caramel:0.3 },
   'banana-fresh':     { fruit:0.9, tropical:0.5 },
   'lemon-juice':      { citrus:1.0, tart:1.0 },
@@ -76,13 +75,22 @@ const TASTE_SIGNALS: Record<string, {
   'cream-of-tartar':  { tart:0.3 },
   'cornmeal-yellow':  { earthy:0.2 },
   'chicken-broth':    { savory:1.0 },
+  'chicken-cooked':   { savory:0.9 },
+  'turkey-cooked':    { savory:0.85 },
+  'mushroom-sliced':  { savory:0.7, earthy:0.5 },
+  'peas-frozen':      { fruit:0.5, savory:0.2 },
+  'celery-diced':     { savory:0.25 },
+  'onion-diced':      { savory:0.4 },
+  'carrot-diced':     { fruit:0.35, earthy:0.2 },
+  'lamb-ground':      { savory:1.0 },
+  'beef-ground':      { savory:1.0 },
+  'potato-russet':    { earthy:0.5 },
+  'worcestershire':   { savory:0.8, tart:0.3 },
   'black-pepper':     { spice:0.5, savory:0.3 },
   'thyme-dried':      { savory:0.6, earthy:0.3 },
   'rosemary-dried':   { savory:0.7, earthy:0.4 },
   'ginger-ground':    { spice:1.0 },
   'spice-allspice':   { spice:0.9 },
-  'fruit-applesauce': { fruit:0.8, tart:0.2 },
-  'fruit-pineapple-rings': { fruit:0.9, tropical:1.0, tart:0.4 },
 
   // nuts
   'nut-walnut':     { nutty:1.0, bitter:0.3 },
@@ -105,7 +113,6 @@ const TASTE_SIGNALS: Record<string, {
   'spice-cloves':      { spice:1.0 },
   'spice-pumpkin-pie': { spice:1.0 },
   'spice-lavender':    { floral:1.0, spice:0.3 },
-  'spice-allspice':    { spice:0.9 },
 
   // flavorings / extracts
   'vanilla-extract': { },
@@ -131,14 +138,12 @@ const TASTE_SIGNALS: Record<string, {
   'sugar-brown-dk':  { caramel:0.4 },
   'honey':           { caramel:0.3, floral:0.3 },
   'maple-syrup':     { caramel:0.7 },
-  'molasses':        { caramel:0.8, bitter:0.4 },
 
   // fats with flavour
   'butter-brown':    { caramel:0.6 },
   'oil-coconut':     { coconut:0.5 },
 
   // dairy
-  'milk-buttermilk': { tart:0.2 },   // tangy but background note, not dominant
   'cream-cheese':    { tart:0.12 },  // mildly tangy (pH ~4.4) — not lemon-level tart
 };
 
@@ -202,7 +207,15 @@ const FLAVOR_EMOJIS: Record<FlavorKey, string> = {
   coconut:   '🥥',
 };
 
-export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): CakeMetrics {
+export type CalculateCakeMetricsOptions = { product?: 'cake' | 'pie' };
+
+export function calculateCakeMetrics(
+  recipeIngredients: RecipeIngredient[],
+  options?: CalculateCakeMetricsOptions,
+): CakeMetrics {
+  const bk = options?.product === 'pie' ? 'pie' : 'cake';
+  const bks = bk === 'pie' ? 'pies' : 'cakes';
+
   let totalWeight = 0;
   let totalCalories = 0;
   let totalProtein = 0;
@@ -274,8 +287,9 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
     // Accumulate taste signals
     const signals = TASTE_SIGNALS[ri.id];
     if (signals) {
-      (Object.keys(signals) as FlavorKey[]).forEach((key) => {
-        rawSignals[key] += w * (signals[key] ?? 0);
+      (Object.keys(signals) as (keyof typeof signals)[]).forEach((key) => {
+        const k = key as FlavorKey;
+        rawSignals[k] += w * (signals[key] ?? 0);
       });
     }
   });
@@ -330,7 +344,7 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
   }
 
   // Taste notes — human-readable sentence
-  let tasteNotes = buildTasteNotes(topFlavors, flavorScores, sweetnessScore, flavorProfile.length);
+  let tasteNotes = buildTasteNotes(topFlavors, flavorScores, sweetnessScore, flavorProfile.length, bk);
 
   // ── Taste warnings — with personality ────────────────────────
   const tasteWarnings: string[] = [];
@@ -345,7 +359,7 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
 
     // Vanilla — anything over ~3 tsp (15g) is aggressive, over 30g is absurd
     if ((name.includes('vanilla extract') || name.includes('vanilla paste') || name.includes('vanilla bean paste'))) {
-      if (w >= 45) tasteWarnings.push('🌿 That\'s essentially vanilla soup with a little cake mixed in. Bold.');
+      if (w >= 45) tasteWarnings.push(`🌿 That's essentially vanilla soup with a little ${bk} mixed in. Bold.`);
       else if (w >= 25) tasteWarnings.push('🌿 Vanilla overload — your kitchen will smell incredible, but this might taste like perfume.');
       else if (w >= 15) tasteWarnings.push('🌿 Heavy on the vanilla — you clearly know what you want in life.');
     }
@@ -353,21 +367,21 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
     // Sugar — over 60% of total is wild
     // (handled by ratio below, but also check raw grams)
     if (ing.category === 'sugar') {
-      if (w >= 800) tasteWarnings.push('🍬 That\'s not a cake, that\'s a sugar delivery vehicle with structural ambitions.');
+      if (w >= 800) tasteWarnings.push(`🍬 That's not a ${bk}, that's a sugar delivery vehicle with structural ambitions.`);
       else if (w >= 500) tasteWarnings.push('🍬 Dentists in your area have mysteriously started smiling.');
-      else if (w >= 400) tasteWarnings.push('🍬 This cake is going to need its own insulin prescription.');
+      else if (w >= 400) tasteWarnings.push(`🍬 This ${bk} is going to need its own insulin prescription.`);
     }
 
     // Butter — over 400g is a lot
     if (ing.category === 'fat' && name.includes('butter')) {
       if (w >= 500) tasteWarnings.push('🧈 More butter than a French restaurant on a Saturday night.');
       else if (w >= 350) tasteWarnings.push('🧈 Julia Child would nod approvingly. Your cardiologist, less so.');
-      else if (w >= 250) tasteWarnings.push('🧈 Generously buttered — this cake will be rich and deeply satisfying.');
+      else if (w >= 250) tasteWarnings.push(`🧈 Generously buttered — this ${bk} will be rich and deeply satisfying.`);
     }
 
     // Salt — over 15g is a lot
     if (name === 'salt' || name.includes('sea salt')) {
-      if (w >= 20) tasteWarnings.push('🧂 That\'s more salt than a bag of pretzels. Is this a cake or a brine?');
+      if (w >= 20) tasteWarnings.push(`🧂 That's more salt than a bag of pretzels. Is this a ${bk} or a brine?`);
       else if (w >= 12) tasteWarnings.push('🧂 Heavy on the salt — are you sure you\'re not making focaccia?');
     }
 
@@ -385,8 +399,8 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
 
     // Alcohol
     if (name.includes('rum') || name.includes('bourbon') || name.includes('whiskey') || name.includes('brandy') || name.includes('kahlua')) {
-      if (w >= 120) tasteWarnings.push('🥃 At this point you might as well serve the bottle alongside the cake.');
-      else if (w >= 60) tasteWarnings.push('🥃 Boozy and bold — this cake has clearly lived a little.');
+      if (w >= 120) tasteWarnings.push(`🥃 At this point you might as well serve the bottle alongside the ${bk}.`);
+      else if (w >= 60) tasteWarnings.push(`🥃 Boozy and bold — this ${bk} has clearly lived a little.`);
       else if (w >= 30) tasteWarnings.push('🥃 A pleasant warmth — suitable for adults and interesting dinner parties.');
     }
 
@@ -398,8 +412,8 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
 
     // Hot sauce / cayenne (spicy)
     if (name.includes('cayenne') || name.includes('hot sauce') || name.includes('chili')) {
-      if (w >= 10) tasteWarnings.push('🌶️ Spicy cake? You\'re either a genius or conducting an experiment. Respect either way.');
-      else if (w >= 4) tasteWarnings.push('🌶️ A little heat in a cake — adventurous and surprisingly good with chocolate.');
+      if (w >= 10) tasteWarnings.push(`🌶️ Spicy ${bk}? You're either a genius or conducting an experiment. Respect either way.`);
+      else if (w >= 4) tasteWarnings.push(`🌶️ A little heat in a ${bk} — adventurous and surprisingly good with chocolate.`);
     }
 
     // Matcha
@@ -408,20 +422,20 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
       else if (w >= 20) tasteWarnings.push('🍵 Bold matcha — earthy, grassy, and not for the faint of heart.');
     }
 
-    // Cream cheese (in a cake batter — not icing)
+    // Cream cheese (in a batter / filling — not icing)
     if (name.includes('cream cheese') && w >= 500) {
-      tasteWarnings.push('🧀 At this point the line between cake and cheesecake is a philosophical question.');
+      tasteWarnings.push(`🧀 At this point the line between ${bk} and cheesecake is a philosophical question.`);
     }
 
     // Oil — over 300g
     if (ing.category === 'fat' && (name.includes('oil'))) {
-      if (w >= 350) tasteWarnings.push('🫙 This cake is going to be incredibly moist. Possibly concerningly moist.');
+      if (w >= 350) tasteWarnings.push(`🫙 This ${bk} is going to be incredibly moist. Possibly concerningly moist.`);
     }
 
     // Eggs — unusual quantities
     if (ing.category === 'egg' && !name.includes('white') && !name.includes('yolk')) {
       const eggCount = Math.round(w / 50);
-      if (eggCount >= 8) tasteWarnings.push(`🥚 ${eggCount} eggs? This cake is basically a very sweet omelette.`);
+      if (eggCount >= 8) tasteWarnings.push(`🥚 ${eggCount} eggs? This ${bk} is basically a very sweet omelette.`);
       else if (eggCount >= 6) tasteWarnings.push(`🥚 ${eggCount} eggs is a commitment — rich, custardy, and eggy in a good way.`);
     }
 
@@ -475,9 +489,9 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
       else if (w >= 300) tasteWarnings.push('🌰 Very nutty — every bite will be 90% pecan and 10% "wow that\'s a lot of pecan."');
     }
 
-    // Cream cheese in a pie
-    if (name.includes('cream cheese') && w >= 450) {
-      tasteWarnings.push('🧀 This much cream cheese in a pie is a commitment — you\'re basically making cheesecake. Glorious.');
+    // Cream cheese — rich pie / cake fillings
+    if (name.includes('cream cheese') && w >= 450 && w < 500) {
+      tasteWarnings.push(`🧀 This much cream cheese in a ${bk} is a commitment — you're basically making cheesecake. Glorious.`);
     }
 
     // Heavy cream — over 500g
@@ -510,12 +524,12 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
 
     // Peanut butter
     if (name.includes('peanut butter') && w >= 400) {
-      tasteWarnings.push('🥜 This is basically a cake-shaped peanut butter cup. That\'s a compliment.');
+      tasteWarnings.push(`🥜 This is basically a ${bk}-shaped peanut butter cup. That's a compliment.`);
     }
 
     // Sour cream / yogurt — high acidity base
     if ((name.includes('sour cream') || name.includes('greek yogurt')) && w >= 400) {
-      tasteWarnings.push('😮 That\'s a lot of cultured dairy — your cake will be tangy, tender, and very opinionated.');
+      tasteWarnings.push(`😮 That's a lot of cultured dairy — your ${bk} will be tangy, tender, and very opinionated.`);
     }
   });
 
@@ -525,19 +539,23 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
   if (sugarRatio > 55) {
     tasteWarnings.push('🩺 Sugar is more than half this recipe by weight. Your pancreas would like a word.');
   } else if (sugarRatio > 45) {
-    tasteWarnings.push('🍬 Exceptionally sweet — this cake doesn\'t need frosting, it needs a warning label.');
+    tasteWarnings.push(
+      bk === 'pie'
+        ? '🍬 Exceptionally sweet — this pie doesn\'t need extra topping, it needs a warning label.'
+        : '🍬 Exceptionally sweet — this cake doesn\'t need frosting, it needs a warning label.',
+    );
   }
 
   // Fat ratio > 45% — heart attack cake
   if (fatRatio > 50) {
     tasteWarnings.push('❤️ Fat is over half this recipe. Delicious, but maybe share it with a lot of people.');
   } else if (fatRatio > 40) {
-    tasteWarnings.push('🧈 Extremely rich fat content — this cake will be incredibly tender and also very filling.');
+    tasteWarnings.push(`🧈 Extremely rich fat content — this ${bk} will be incredibly tender and also very filling.`);
   }
 
   // No flour at all (flourless cake) — informational
   if (flourWeight === 0 && totalWeight > 200) {
-    tasteWarnings.push('✨ No flour detected — this is intentional, right? Flourless cakes are amazing but structurally brave.');
+    tasteWarnings.push(`✨ No flour detected — this is intentional, right? Flourless ${bks} are amazing but structurally brave.`);
   }
 
   // Almost no liquid
@@ -547,7 +565,7 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
 
   // More sugar than flour — unusual
   if (sugarWeight > flourWeight * 1.5 && flourWeight > 0) {
-    tasteWarnings.push('🍰 More sugar than flour — this will be dense, sweet, and fudgy. A candy bar in cake form.');
+    tasteWarnings.push(`🍰 More sugar than flour — this will be dense, sweet, and fudgy. A candy bar in ${bk} form.`);
   }
 
   // More fat than flour — unusual
@@ -559,9 +577,9 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
   if (flavorScores.bitter > 70) tasteWarnings.push('🍫 Intensely bitter — this needs sugar to balance it, or it\'s a very adult chocolate experience.');
   if (flavorScores.tart   > 80) tasteWarnings.push('🍋 Very tart — your mouth will know exactly what hit it. Balance with sweetness.');
   if (flavorScores.spice  > 80) tasteWarnings.push('🌶️ Heavily spiced — subtle this is not. Season\'s greetings from your sinuses.');
-  if (flavorScores.savory > 60) tasteWarnings.push('🧅 This cake has a noticeably savory edge. Intentional? If so, you\'re interesting at parties.');
+  if (flavorScores.savory > 60) tasteWarnings.push(`🧅 This ${bk} has a noticeably savory edge. Intentional? If so, you're interesting at parties.`);
   if (flavorScores.minty  > 50) tasteWarnings.push('🌿 Strong mint — pairs beautifully with chocolate, slightly alarming on its own.');
-  if (sweetnessScore < 15 && totalWeight > 100) tasteWarnings.push('😐 Very low sweetness — are you making cake or bread? Both are valid, just checking.');
+  if (sweetnessScore < 15 && totalWeight > 100) tasteWarnings.push(`😐 Very low sweetness — are you making ${bk} or bread? Both are valid, just checking.`);
 
   // Deduplicate (in case combined mode hits same ingredient twice)
   const uniqueWarnings = [...new Set(tasteWarnings)];
@@ -634,9 +652,10 @@ export function calculateCakeMetrics(recipeIngredients: RecipeIngredient[]): Cak
 
 function buildTasteNotes(
   topFlavors: FlavorKey[],
-  scores: Record<FlavorKey, number>,
+  _scores: Record<FlavorKey, number>,
   sweetnessScore: number,
-  profileLength: number,
+  _profileLength: number,
+  bakedGood: 'cake' | 'pie' = 'cake',
 ): string {
   if (topFlavors.length === 0) {
     return sweetnessScore > 50
@@ -661,7 +680,9 @@ function buildTasteNotes(
     'fruit+tropical':    'Tropical and fruity — sunny, exotic flavours with natural sweetness.',
     'fruit+caramel':     'Sweet caramelised fruit — like a warm fruit tart.',
     'spice+caramel':     'Warm spice with rich caramel sweetness — cosy and autumnal.',
-    'spice+fruit':       'Fragrant spice wrapped around bright fruit — like a classic spiced fruit cake.',
+    'spice+fruit':       bakedGood === 'pie'
+      ? 'Fragrant spice wrapped around bright fruit — like a classic spiced fruit pie.'
+      : 'Fragrant spice wrapped around bright fruit — like a classic spiced fruit cake.',
     'spice+earthy':      'Deeply aromatic spiced notes with earthy undertones — complex and warming.',
     'nutty+caramel':     'Toasted nuts and buttery caramel — rich, indulgent and deeply satisfying.',
     'citrus+floral':     'Delicate floral notes with bright citrus — elegant and aromatic.',

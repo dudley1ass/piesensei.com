@@ -6,6 +6,8 @@ interface MetricsDisplayProps {
   metrics: CakeMetrics;
   icingMetrics?: CakeMetrics | null;
   combinedMetrics?: CakeMetrics | null;
+  /** PieSensei uses pie/filling/crust labelling */
+  variant?: 'cake' | 'pie';
 }
 
 function ScoreBar({ label, score, emoji }: { label: string; score: number; emoji: string }) {
@@ -37,7 +39,7 @@ function PredictionRow({ icon, label, value }: { icon: string; label: string; va
   );
 }
 
-export function MetricsDisplay({ metrics, icingMetrics, combinedMetrics }: MetricsDisplayProps) {
+export function MetricsDisplay({ metrics, icingMetrics, combinedMetrics, variant = 'pie' }: MetricsDisplayProps) {
   const hasIcing = !!icingMetrics;
   const [view, setView] = useState<'cake' | 'icing' | 'combined'>(hasIcing ? 'combined' : 'cake');
 
@@ -81,7 +83,11 @@ export function MetricsDisplay({ metrics, icingMetrics, combinedMetrics }: Metri
               onClick={() => setView(v)}
               className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all ${effectiveView === v ? 'bg-white text-red-600 shadow' : 'text-gray-500 hover:text-gray-800'}`}
             >
-              {v === 'cake' ? '🎂 Cake' : v === 'icing' ? '🧁 Icing' : '✨ Combined'}
+              {v === 'cake'
+                ? (variant === 'pie' ? '🥧 Filling' : '🎂 Cake')
+                : v === 'icing'
+                  ? (variant === 'pie' ? '🥐 Crust' : '🧁 Icing')
+                  : '✨ Combined'}
             </button>
           ))}
         </div>
@@ -149,7 +155,10 @@ export function MetricsDisplay({ metrics, icingMetrics, combinedMetrics }: Metri
       {/* ── Science Scores ── */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
         <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-          <span>🔬</span> {effectiveView === 'icing' ? 'Icing' : effectiveView === 'combined' ? 'Combined' : 'Cake'} Science Scores
+          <span>🔬</span>{' '}
+          {variant === 'pie'
+            ? 'Pie Science Scores'
+            : `${effectiveView === 'icing' ? 'Icing' : effectiveView === 'combined' ? 'Combined' : 'Cake'} Science Scores`}
         </h3>
         <ScoreBar label="Moisture"   score={activeMetrics.moistureScore}   emoji="💧" />
         <ScoreBar label="Tenderness" score={activeMetrics.tendernessScore} emoji="🧈" />
@@ -180,7 +189,7 @@ export function MetricsDisplay({ metrics, icingMetrics, combinedMetrics }: Metri
           <PredictionRow icon="🌾" label="Gluten Development" value={activeMetrics.glutenDevelopment} />
           <PredictionRow icon="⬆️" label="Leavening Type"     value={activeMetrics.leavenType} />
           <PredictionRow icon="🧁" label="Predicted Crumb"    value={activeMetrics.predictedCrumb} />
-          <PredictionRow icon="📅" label="Shelf Life"         value={metrics.shelfLife} />
+          <PredictionRow icon="📅" label="Shelf Life"         value={activeMetrics.shelfLife} />
           <PredictionRow icon="🌡️" label="Baking Temp"        value={activeMetrics.bakingTemp} />
           <PredictionRow icon="⚖️" label="Total Weight"       value={`${activeMetrics.totalWeight.toFixed(0)}g`} />
         </div>
